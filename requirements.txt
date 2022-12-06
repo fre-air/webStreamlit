@@ -1,0 +1,9 @@
+streamlit==1.15.2
+streamlit_webrtc==0.44.0
+numpy==1.23.4
+pandas==1.4.4
+requests==2.28.1
+av==9.2.0
+opencv-python==4.6.0.66
+pillow==9.2.0
+pyecharts==1.9.1
