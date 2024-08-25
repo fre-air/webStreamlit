@@ -7,3 +7,4 @@ av
 opencv-python-headless
 pillow
 pyecharts==1.9.1
+streamlit_echarts
