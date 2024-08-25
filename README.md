@@ -6,7 +6,7 @@
 3. 叠加视频监控点，可以进行人、背景、鸟等21类物体检测
 4. 将示例部署至Streamlit Cloud，点击链接一键访问👉[示例](https://fre-air-webstreamlit-webstreamlit-e8tmh8.streamlit.app/)
 
-![web.png](..%2FwebStreamlit-main%2Fpicture%2Fweb.png)
+<img src=".\picture\web.png"> 
 
 
 ### 版本需求
