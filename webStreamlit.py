@@ -1,6 +1,6 @@
 import streamlit as st
-import streamlit.components.v1 as components
 from streamlit_webrtc import WebRtcMode, webrtc_streamer
+from streamlit_echarts import st_pyecharts
 from typing import List, NamedTuple
 import numpy as np
 import pandas as pd
@@ -18,9 +18,9 @@ import urllib.request
 from pyecharts.charts import *
 from pyecharts import options as opts
 
-#Pyecharts图表生成需要一些静态资源文件，通过下面代码更改为kesci提供的资源，提高加载速度～
-from pyecharts.globals import CurrentConfig
-CurrentConfig.ONLINE_HOST = "https://cdn.kesci.com/lib/pyecharts_assets/"
+#Pyecharts图表生成需要一些静态资源文件，通过下面代码更改为本地提供的资源，提高加载速度～
+from pyecharts.globals import CurrentConfig, OnlineHostType
+CurrentConfig.ONLINE_HOST = "./pyecharts-assets-master/assets/"
 
 image1 = Image.open('./icon/tea-garden.png')#读取图标为np.array类型
 #1、配置页面的全局信息
@@ -305,14 +305,12 @@ with st.container():
             list(map(eval,df_forecastHours['humidity'].values.tolist())),
             yaxis_index=0,
             color="#d14a61",
-
         )
         .add_yaxis(
             "降水量",
             list(map(eval,df_forecastHours['precip'].values.tolist())),
             yaxis_index=1,
             color="#5793f3",
-
         )
         .extend_axis(
             yaxis=opts.AxisOpts(
@@ -381,7 +379,7 @@ with st.container():
     bar.overlap(line)
     grid = Grid()
     grid.add(bar, opts.GridOpts(pos_left="5%", pos_right="20%"), is_control_axis_index=True)
-    components.html(grid.render_embed(), width=1400, height=520)
+    st_pyecharts(grid) #使用streamlit-echarts显示
 
 col5,col6=st.columns(2)
 with col5.container():
@@ -390,14 +388,6 @@ with col5.container():
     y_data = []
     for i in range(len(y)):
         y_data.append(round(float(y[i]) / 3.6, 1))#km/h与m/s单位换算
-    #配色方案从Echarts投过来，径向渐变
-    radial_item_color_js = """new echarts.graphic.RadialGradient(0, 0, 1, [{
-                                            offset: 0,
-                                            color: 'rgb(251, 118, 123)'
-                                        }, {
-                                            offset: 1,
-                                            color: 'rgb(204, 46, 72)'
-                                        }])"""
     c = (
         Polar(init_opts=opts.InitOpts(width='400px',height='400px'))
         .add_schema(angleaxis_opts=opts.AngleAxisOpts(data=x, type_="category",
@@ -406,17 +396,10 @@ with col5.container():
                     radiusaxis_opts=opts.RadiusAxisOpts(axislabel_opts=opts.LabelOpts(color='#fafafa'))
                     )
         .add("风速", y_data, type_="bar", stack="stack0")
-        # .set_series_opts(label_opts=opts.LabelOpts(is_show=True,color='#ffffff',position='inside'))
-        # .set_series_opts(itemstyle_opts=opts.ItemStyleOpts(color=JsCode(radial_item_color_js)))
-        .set_global_opts(
-            title_opts=opts.TitleOpts(title="风玫瑰图",
-                                      title_textstyle_opts=opts.TextStyleOpts(color='#fafafa')),
-            legend_opts=opts.LegendOpts(is_show=True, pos_left='70%',
-                                        pos_right='30%',
-                                        textstyle_opts=opts.TextStyleOpts(color='#fafafa')),
-        )
+
+        .set_global_opts(title_opts=opts.TitleOpts(title="风玫瑰图"))
     )
-    components.html(c.render_embed(),height=390,width=400)
+    st_pyecharts(c) #使用streamlit-echarts显示
 
 with col6.container():
     x_tea=["漳平水仙","茉莉花茶","坦洋工夫","白芽奇兰","金骏眉","武夷岩茶"]
@@ -435,23 +418,10 @@ with col6.container():
         .add_yaxis('',data_pair)
         .reversal_axis()
         .set_series_opts(label_opts=opts.LabelOpts(position="right"))
-        .set_global_opts(title_opts=opts.TitleOpts(title="种植品种分析",pos_left='center',pos_top='top',
-                                                   title_textstyle_opts=opts.TextStyleOpts(color='#fafafa')),
-                         yaxis_opts=opts.AxisOpts(axisline_opts=opts.AxisLineOpts(linestyle_opts=opts.LineStyleOpts(color='#ffffff'),is_show=False),
-                                                  name="面积/亩",
-                                                  axistick_opts=opts.AxisTickOpts(is_show=False)),
-                         xaxis_opts=opts.AxisOpts(axisline_opts=opts.AxisLineOpts(is_show=False),
-                                                  axistick_opts=opts.AxisTickOpts(is_show=False),
-                                                  axislabel_opts=opts.LabelOpts(is_show=False)),
-                         toolbox_opts=opts.ToolboxOpts(is_show=True,
-                                                       orient='horizontal',
-                                                       feature={"saveAsImage": {},"dataZoom":{"yAxisIndex": "none"},"restore":{},
-                                                                "magicType":{"show": True, "type":["line","bar"]},"dataView": {}},
-                                                       pos_left='center',
-                                                       pos_top='5%'
-                                                       ))
+        .set_global_opts(title_opts=opts.TitleOpts(title="种植品种分析"))
     )
-    components.html(c_tea.render_embed(), height=350, width=800)
+    st_pyecharts(c_tea) #使用streamlit-echarts显示
+
 st.markdown('<br>', unsafe_allow_html=True)#html语句，换行
 #7、茶园文字介绍
 st.markdown("### 大田美人景区茶园")
@@ -478,6 +448,7 @@ st.markdown("### 茶园视频介绍")
 st.markdown('<br>', unsafe_allow_html=True)#html语句，换行
 col11,col12=st.columns(2)
 video11,video12=get_video_byte()
+
 col11.video(video11, format='video/mp4',start_time=1)
 col12.video(video12, format='video/mp4',start_time=9)
 #源代码
@@ -485,3 +456,5 @@ with st.expander("View Code"):
     with open('webStreamlit.py', 'r', encoding='utf-8') as f:
         code = f.read()
     st.code(code, language="python")
+
+
